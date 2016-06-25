@@ -1,10 +1,9 @@
-var container, stats;
+var container;
 var camera, scene, renderer, parentTransform, sphereInter;
 
 var mouse = new THREE.Vector2();
-var radius = 100, theta = 0, vert = 0;
-
-var currentIntersected;
+var vert = 0;
+var materialColour = Math.random() * 0xffffff;
 
 init();
 animate();
@@ -20,7 +19,6 @@ function init() {
 
     var geometry = new THREE.SphereGeometry( 5 );
     var material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
-
     sphereInter = new THREE.Mesh( geometry, material );
     sphereInter.visible = false;
     scene.add( sphereInter );
@@ -56,39 +54,19 @@ function init() {
     }
 
     parentTransform = new THREE.Object3D();
-    parentTransform.position.x = 1;//Math.random() * 40 - 20;
-    parentTransform.position.y = 1;//Math.random() * 40 - 20;
-    parentTransform.position.z = 1;//Math.random() * 40 - 20;
-
-    parentTransform.rotation.x = 0;//Math.random() * 2 * Math.PI;
-    parentTransform.rotation.y = 0;//Math.random() * 2 * Math.PI;
-    parentTransform.rotation.z = 0;//Math.random() * 2 * Math.PI;
-
-    parentTransform.scale.x = 1;//Math.random() + 0.5;
-    parentTransform.scale.y = 1;//Math.random() + 0.5;
-    parentTransform.scale.z = 1;//Math.random() + 0.5;
+    parentTransform.position.x = 1;
+    parentTransform.position.y = 1;
+    parentTransform.position.z = 1;
 
     //Add a total of 50 lines
     for ( var i = 0; i < 1; i ++ ) {
 
+        var material = new THREE.LineBasicMaterial({
+            color: materialColour
+        });
+
         //create a new geometry holder
-        var object;
-
-        //half the time, make this geometry a Line, the other half, a LineSegments
-        object = new THREE.Line( geometry );
-
-        object.position.x = 0;//Math.random() * 400 - 200;
-        object.position.y = 0;//Math.random() * 400 - 200;
-        object.position.z = 0;//Math.random() * 400 - 200;
-
-        //object.rotation.x = Math.random() * 2 * Math.PI;
-        //object.rotation.y = Math.random() * 2 * Math.PI;
-        //object.rotation.z = Math.random() * 2 * Math.PI;
-
-        object.scale.x = 1;//Math.random() + 0.5;
-        object.scale.y = 1;//Math.random() + 0.5;
-        object.scale.z = 1;//Math.random() + 0.5;
-
+        var object = new THREE.Line( geometry, material );
         parentTransform.add( object );
 
         //how many copies
@@ -97,18 +75,13 @@ function init() {
             clonedObject.position.x = object.position.x + (j / 1.5);
             parentTransform.add(clonedObject);
         }
-
-
     }
-
-
 
     scene.add( parentTransform );
 
     camera.lookAt(scene.children[1].children[7].geometry.vertices[10]);
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
-    //renderer.setClearColor( 0xf0f0f0 );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
     container.appendChild(renderer.domElement);
@@ -156,15 +129,20 @@ function render() {
     if(token == steps){
         token = 1;
         vert++;
+    }
 
+    if(Math.floor(Math.random() * 60) == 5){
         //add a tree
         addTree(scene.children[1].children[0].geometry.vertices[vert].x,
             scene.children[1].children[0].geometry.vertices[vert].y,
             scene.children[1].children[0].geometry.vertices[vert].z);
+
     }
 
-    camera.lookAt(scene.children[1].children[7].geometry.vertices[Math.floor(vert / 100)]);
-    //camera.lookAt(new THREE.Vector3( 4, 4, 4 ));
+
+
+    //camera.lookAt(scene.children[1].children[7].geometry.vertices[Math.floor(vert / 100)]);
+    camera.lookAt(new THREE.Vector3( 4, 4, 4 ));
     renderer.render( scene, camera );
 }
 
@@ -186,18 +164,17 @@ function calculateNewCameraPosition(){
 
 function addTree(posX, posY, posZ){
 
-    var geometry = new THREE.BoxGeometry(0.3,0.3,0.3)
-    var material = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+    var geometry = new THREE.BoxGeometry(0.3,1,0.3);
+    var material = new THREE.MeshBasicMaterial( {color: materialColour} );
     var sphere = new THREE.Mesh( geometry, material );
 
-    var seed = (Math.random() * 13.5);
 
-    console.log('posX: ' + posX + ' seed:' + seed);
+    var seed = (Math.random() * 13.5);
 
     sphere.position.x = posX + seed;
     sphere.position.y = posY + 1;
     sphere.position.z = posZ + 1;
+    sphere.rotation.x = Math.PI / Math.random(2);
     scene.add( sphere );
-    //console.log('tree added ' + posX + ' ' + posY);
 
 }
