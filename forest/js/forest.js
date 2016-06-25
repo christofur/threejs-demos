@@ -79,6 +79,21 @@ function init() {
 
     scene.add( parentTransform );
 
+
+
+    //new tree only
+
+   /* light = new THREE.DirectionalLight( 0xffffff );
+    light.position.set( 0, 0, 1 );
+    scene.add( light );
+*/
+
+    light = new THREE.AmbientLight( 0xffffff );
+    scene.add(light);
+
+    //end new tree
+
+
     camera.lookAt(scene.children[1].children[7].geometry.vertices[10]);
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -140,7 +155,7 @@ function render() {
     }
 
 
-
+scene.updateMatrixWorld();
     //camera.lookAt(scene.children[1].children[7].geometry.vertices[Math.floor(vert / 100)]);
     camera.lookAt(new THREE.Vector3( 4, 4, 4 ));
     renderer.render( scene, camera );
@@ -164,17 +179,77 @@ function calculateNewCameraPosition(){
 
 function addTree(posX, posY, posZ){
 
+
     var geometry = new THREE.BoxGeometry(0.3,1,0.3);
     var material = new THREE.MeshBasicMaterial( {color: materialColour} );
     var sphere = new THREE.Mesh( geometry, material );
 
-
     var seed = (Math.random() * 13.5);
-
     sphere.position.x = posX + seed;
     sphere.position.y = posY + 1;
     sphere.position.z = posZ + 1;
-    sphere.rotation.x = Math.PI / Math.random(2);
+    //sphere.rotation.x = Math.PI / Math.random(2);
     scene.add( sphere );
+
+    sphere.updateMatrixWorld();
+    scene.updateMatrixWorld();
+    var vector = new THREE.Vector3();
+    vector.setFromMatrixPosition( sphere.matrixWorld );
+    addTreeNew(vector.x, vector.y, vector.z);
+
+}
+
+function addTreeNew(posX, posY, posZ){
+
+    var canvas = document.createElement( 'canvas' );
+    canvas.width = 128;
+    canvas.height = 128;
+    var context = canvas.getContext( '2d' );
+    var gradient = context.createRadialGradient( canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, canvas.width / 2 );
+    gradient.addColorStop( 0.1, 'rgba(210,210,210,1)' );
+    gradient.addColorStop( 1, 'rgba(255,255,255,1)' );
+    context.fillStyle = gradient;
+    context.fillRect( 0, 0, canvas.width, canvas.height );
+    var shadowTexture = new THREE.Texture( canvas );
+    shadowTexture.needsUpdate = true;
+
+    var faceIndices = [ 'a', 'b', 'c' ];
+    var color, f, f2, f3, p, vertexIndex,
+        radius = Math.random() + 0.5,
+        geometry  = new THREE.IcosahedronGeometry( radius, 1 ),
+        geometry2 = new THREE.IcosahedronGeometry( radius, 1 ),
+        geometry3 = new THREE.IcosahedronGeometry( radius, 1 );
+    for ( var i = 0; i < geometry.faces.length; i ++ ) {
+        f  = geometry.faces[ i ];
+        f2 = geometry2.faces[ i ];
+        f3 = geometry3.faces[ i ];
+        for( var j = 0; j < 3; j++ ) {
+            vertexIndex = f[ faceIndices[ j ] ];
+            p = geometry.vertices[ vertexIndex ];
+            color = new THREE.Color( 0xffffff );
+            color.setHSL( ( p.y / radius + 1 ) / 2, 1.0, 0.5 );
+            f.vertexColors[ j ] = color;
+            color = new THREE.Color( 0xffffff );
+            color.setHSL( 0.0, ( p.y / radius + 1 ) / 2, 0.5 );
+            f2.vertexColors[ j ] = color;
+            color = new THREE.Color( 0xffffff );
+            color.setHSL( 0.125 * vertexIndex/geometry.vertices.length, 1.0, 0.5 );
+            f3.vertexColors[ j ] = color;
+        }
+    }
+    var materials = [
+        new THREE.MeshPhongMaterial( { color: 0xffffff, shading: THREE.FlatShading, vertexColors: THREE.VertexColors, shininess: 0 } ),
+        new THREE.MeshBasicMaterial( { color: 0x000000, shading: THREE.FlatShading, wireframe: true, transparent: true } )
+    ];
+
+    group3 = THREE.SceneUtils.createMultiMaterialObject( geometry3, materials );
+    group3.position.x = 0 + posX;
+    group3.position.y = 1 + posY;
+    group3.position.z = 0 + posZ;
+    //console.log(group3.position);
+
+    group3.rotation.x = 0;
+    scene.add( group3 );
+
 
 }
