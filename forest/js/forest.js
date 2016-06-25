@@ -75,16 +75,7 @@ function init() {
         var object;
 
         //half the time, make this geometry a Line, the other half, a LineSegments
-        if ( Math.random() > 0.5 ) {
-
-            object = new THREE.Line( geometry );
-
-        } else {
-
-            object = new THREE.Line( geometry );
-            //object = new THREE.LineSegments( geometry );
-
-        }
+        object = new THREE.Line( geometry );
 
         object.position.x = 0;//Math.random() * 400 - 200;
         object.position.y = 0;//Math.random() * 400 - 200;
@@ -110,6 +101,8 @@ function init() {
 
     }
 
+
+
     scene.add( parentTransform );
 
     camera.lookAt(scene.children[1].children[7].geometry.vertices[10]);
@@ -119,7 +112,6 @@ function init() {
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
     container.appendChild(renderer.domElement);
-
     document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
     //
@@ -149,82 +141,63 @@ function onDocumentMouseMove( event ) {
 //
 
 function animate() {
-
     requestAnimationFrame( animate );
-
     render();
-
-
 }
 
 
 var token = 1;
 var steps = 100;
-var child = 0;
 
 function render() {
 
-    //theta += 0.01;
-
-    //camera.position.x = radius * Math.sin( THREE.Math.degToRad( theta ) );
-    //camera.position.y = radius * Math.sin( THREE.Math.degToRad( theta ) );
-    //camera.position.z = radius * Math.cos( THREE.Math.degToRad( theta ) );
-
-    //camera.position.x = scene.children[1].children[0].position.x;
-    //camera.position.x = camera.position.x - 0.01;
-
-
-/*    if(token == 1){
-        camera.position.x = scene.children[1].children[0].geometry.vertices[vert].x;
-        camera.position.y = scene.children[1].children[0].geometry.vertices[vert].y;
-        camera.position.z = scene.children[1].children[0].geometry.vertices[vert].z - 5;
-
-    }
-    else{*/
-        var xDiff = scene.children[1].children[0].geometry.vertices[vert + 1].x - scene.children[1].children[0].geometry.vertices[vert].x;
-        var rxDiff = xDiff / steps;
-        camera.position.x = scene.children[1].children[0].geometry.vertices[vert].x + rxDiff * token;
-
-
-
-        var yDiff = scene.children[1].children[0].geometry.vertices[vert + 1].y - scene.children[1].children[0].geometry.vertices[vert].y;
-        var ryDiff = yDiff / steps;
-        camera.position.y = scene.children[1].children[0].geometry.vertices[vert].y + ryDiff * token;
-
-
-
-        var zDiff = scene.children[1].children[0].geometry.vertices[vert + 1].z - scene.children[1].children[0].geometry.vertices[vert].z;
-        var rzDiff = zDiff / steps;
-        camera.position.z = (scene.children[1].children[0].geometry.vertices[vert].z + (rzDiff * token)) - 5;
-    //}
-
-
-    //camera.rotation.x = camera.rotation.x + 0.001;
-
+    calculateNewCameraPosition();
     token++;
     if(token == steps){
         token = 1;
         vert++;
+
+        //add a tree
+        addTree(scene.children[1].children[0].geometry.vertices[vert].x,
+            scene.children[1].children[0].geometry.vertices[vert].y,
+            scene.children[1].children[0].geometry.vertices[vert].z);
     }
 
-
     camera.lookAt(scene.children[1].children[7].geometry.vertices[Math.floor(vert / 100)]);
-
-    //camera.position.x = scene.children[1].children[0].geometry.vertices[vert].x;
-    //camera.position.y = scene.children[1].children[0].geometry.vertices[vert].y;
-    //camera.position.z = scene.children[1].children[0].geometry.vertices[vert].z - 5;
-
-    //vert++
-
-    //camera.position.z = camera.position.z + 0.01;
-
-    //camera.rotation.y = camera.rotation.y + 1;
-    //camera.rotation.x = camera.rotation.x + 1;
-
-    //camera.lookAt(scene.children[1].position)
-    //camera.lookAt( scene.position );``
-
-    //camera.updateMatrixWorld();
+    //camera.lookAt(new THREE.Vector3( 4, 4, 4 ));
     renderer.render( scene, camera );
+}
+
+
+function calculateNewCameraPosition(){
+
+    var xDiff = scene.children[1].children[0].geometry.vertices[vert + 1].x - scene.children[1].children[0].geometry.vertices[vert].x;
+    var rxDiff = xDiff / steps;
+    camera.position.x = scene.children[1].children[0].geometry.vertices[vert].x + rxDiff * token;
+
+    var yDiff = scene.children[1].children[0].geometry.vertices[vert + 1].y - scene.children[1].children[0].geometry.vertices[vert].y;
+    var ryDiff = yDiff / steps;
+    camera.position.y = scene.children[1].children[0].geometry.vertices[vert].y + ryDiff * token;
+
+    var zDiff = scene.children[1].children[0].geometry.vertices[vert + 1].z - scene.children[1].children[0].geometry.vertices[vert].z;
+    var rzDiff = zDiff / steps;
+    camera.position.z = (scene.children[1].children[0].geometry.vertices[vert].z + (rzDiff * token)) - 5;
+}
+
+function addTree(posX, posY, posZ){
+
+    var geometry = new THREE.BoxGeometry(0.3,0.3,0.3)
+    var material = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+    var sphere = new THREE.Mesh( geometry, material );
+
+    var seed = (Math.random() * 13.5);
+
+    console.log('posX: ' + posX + ' seed:' + seed);
+
+    sphere.position.x = posX + seed;
+    sphere.position.y = posY + 1;
+    sphere.position.z = posZ + 1;
+    scene.add( sphere );
+    //console.log('tree added ' + posX + ' ' + posY);
 
 }
